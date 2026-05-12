@@ -1,0 +1,1885 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>YODY Creator Program — KOL/KOC Tracking</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════
+   DESIGN TOKENS — YODY System
+══════════════════════════════ */
+:root {
+  /* Colors */
+  --color-primary:        #FFC400;
+  --color-primary-dark:   #D9A600;
+  --color-navy:           #101827;
+  --color-blue:           #233F9D;
+  --color-white:          #FFFFFF;
+  --color-bg-light:       #F6F7F9;
+  --color-border:         #E5E7EB;
+  --color-text-primary:   #111827;
+  --color-text-secondary: #6B7280;
+  --color-muted:          #9CA3AF;
+  --color-danger:         #EF4444;
+  --color-success:        #22C55E;
+
+  /* Typography */
+  --font-main: "Inter", "Arial", sans-serif;
+  --text-xs:   12px;
+  --text-sm:   14px;
+  --text-base: 16px;
+  --text-lg:   18px;
+  --text-xl:   22px;
+  --text-2xl:  28px;
+  --text-3xl:  36px;
+
+  /* Spacing */
+  --space-1:  4px;
+  --space-2:  8px;
+  --space-3:  12px;
+  --space-4:  16px;
+  --space-5:  20px;
+  --space-6:  24px;
+  --space-8:  32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius */
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-pill: 999px;
+
+  /* Shadow — dùng sparingly */
+  --shadow-sm: 0 2px 8px rgba(17,24,39,0.06);
+  --shadow-md: 0 4px 16px rgba(17,24,39,0.12);
+}
+
+/* ── Reset ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: var(--font-main);
+  font-size: var(--text-base);
+  line-height: 26px;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: var(--font-main); cursor: pointer; }
+input  { font-family: var(--font-main); }
+
+/* ── Container ── */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--space-6);
+}
+
+/* ══════════════════════════════
+   HEADER — 3-zone layout
+   Left: Category btn | Center: Logo | Right: icons
+══════════════════════════════ */
+.app-header {
+  height: 56px;
+  background: var(--color-white);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.app-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+/* Left */
+.header__left { display: flex; align-items: center; gap: var(--space-2); }
+.category-button {
+  height: 36px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-light);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: opacity .15s;
+}
+.category-button:hover { opacity: .85; }
+/* Center — logo */
+.header__center {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.logo-mark {
+  background: var(--color-primary);
+  color: var(--color-navy);
+  font-weight: 800;
+  font-size: var(--text-sm);
+  padding: 4px 12px;
+  border-radius: var(--radius-sm);
+  letter-spacing: 1.5px;
+  line-height: 1;
+}
+.logo-sub {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-navy);
+  line-height: 20px;
+}
+/* Right */
+.header__right { display: flex; align-items: center; gap: var(--space-2); }
+.icon-button {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: opacity .15s;
+}
+.icon-button:hover { opacity: .75; }
+/* Nav steps — demo switcher */
+.nav-steps {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: var(--color-bg-light);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  border: 1px solid var(--color-border);
+}
+.nav-step {
+  height: 30px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.nav-step.active {
+  background: var(--color-white);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+/* ══════════════════════════════
+   SCREEN TRANSITIONS
+══════════════════════════════ */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp .3s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ══════════════════════════════
+   BREADCRUMB
+══════════════════════════════ */
+.breadcrumb {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--color-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: var(--space-5) 0 var(--space-10);
+}
+.breadcrumb__sep { color: var(--color-border); }
+.breadcrumb__active { color: var(--color-text-primary); font-weight: 600; }
+
+/* ══════════════════════════════
+   BUTTONS
+══════════════════════════════ */
+/* Primary */
+.btn-primary {
+  height: 40px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: var(--color-text-primary);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--color-primary-dark); }
+.btn-primary:focus { outline: 2px solid rgba(255,196,0,.5); outline-offset: 2px; }
+.btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+/* Primary large */
+.btn-primary--lg { height: 48px; padding: 0 32px; font-size: var(--text-base); font-weight: 700; }
+
+/* Secondary */
+.btn-secondary {
+  height: 40px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  background: var(--color-bg-light);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: opacity .15s;
+}
+.btn-secondary:hover { opacity: .85; }
+
+/* Ghost (for dark bg) */
+.btn-ghost {
+  height: 40px;
+  padding: 0 var(--space-6);
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-white);
+  border: 1.5px solid rgba(255,255,255,.35);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  transition: background .15s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,.08); }
+
+/* Outline small */
+.btn-outline-sm {
+  height: 32px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background .15s, border-color .15s;
+}
+.btn-outline-sm:hover { background: var(--color-bg-light); }
+
+/* ══════════════════════════════
+   CARDS
+══════════════════════════════ */
+.card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+.card-muted {
+  background: var(--color-bg-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+}
+
+/* ══════════════════════════════
+   FORM INPUTS
+══════════════════════════════ */
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+.form-input {
+  width: 100%;
+  height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-4);
+  font-size: var(--text-sm);
+  font-size: 14px;
+  color: var(--color-text-primary);
+  background: var(--color-white);
+  outline: none;
+  transition: border-color .15s;
+}
+.form-input::placeholder { color: var(--color-muted); }
+.form-input:focus { border-color: var(--color-navy); outline: 2px solid rgba(255,196,0,.5); outline-offset: 2px; }
+.form-help { font-size: 12px; line-height: 18px; color: var(--color-muted); margin-top: 4px; }
+
+/* ══════════════════════════════
+   STATUS CHIPS
+══════════════════════════════ */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 22px;
+  padding: 0 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+}
+.chip--success { background: rgba(34,197,94,.12); color: #16a34a; }
+.chip--warning { background: rgba(255,196,0,.18); color: #92680a; }
+.chip--danger  { background: rgba(239,68,68,.1);  color: var(--color-danger); }
+.chip--blue    { background: rgba(35,63,157,.1);  color: var(--color-blue); }
+.chip--muted   { background: var(--color-bg-light); color: var(--color-text-secondary); }
+
+/* ══════════════════════════════
+   TIER CHIPS
+══════════════════════════════ */
+.tier { height: 20px; padding: 0 8px; border-radius: var(--radius-pill); font-size: 10px; font-weight: 700; display: inline-flex; align-items: center; }
+.tier--mega  { background: rgba(239,68,68,.1);  color: var(--color-danger); }
+.tier--macro { background: rgba(35,63,157,.1);  color: var(--color-blue); }
+.tier--micro { background: rgba(34,197,94,.12); color: #16a34a; }
+
+/* ══════════════════════════════
+   FOOTER
+══════════════════════════════ */
+.app-footer {
+  background: var(--color-navy);
+  color: var(--color-white);
+  padding: var(--space-12) 0 var(--space-8);
+  margin-top: var(--space-16);
+}
+.footer__grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  gap: var(--space-12);
+  margin-bottom: var(--space-10);
+}
+.footer__title {
+  font-size: 15px;
+  line-height: 22px;
+  font-weight: 700;
+  color: var(--color-white);
+  margin-bottom: var(--space-3);
+}
+.footer__text { font-size: var(--text-sm); line-height: 22px; color: #CBD5E1; }
+.footer__menu-item {
+  font-size: var(--text-sm);
+  line-height: 22px;
+  color: #CBD5E1;
+  display: block;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  transition: color .15s;
+}
+.footer__menu-item:hover { color: var(--color-primary); }
+.footer__input {
+  height: 40px;
+  border-radius: var(--radius-pill);
+  border: none;
+  padding: 0 var(--space-4);
+  background: rgba(255,255,255,.1);
+  color: var(--color-white);
+  font-size: var(--text-sm);
+  width: 100%;
+  margin-bottom: var(--space-2);
+  outline: none;
+}
+.footer__input::placeholder { color: rgba(255,255,255,.4); }
+.footer__input:focus { outline: 2px solid rgba(255,196,0,.5); outline-offset: 2px; }
+.social-button {
+  width: 44px; height: 44px;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,.32);
+  background: transparent;
+  color: var(--color-white);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: background .15s;
+}
+.social-button:hover { background: rgba(255,255,255,.08); }
+.footer__legal {
+  border-top: 1px solid rgba(255,255,255,.08);
+  padding-top: var(--space-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: rgba(255,255,255,.4);
+}
+
+/* ══════════════════════════════
+   FLOATING BUTTON
+══════════════════════════════ */
+.floating-button {
+  position: fixed;
+  right: 16px;
+  bottom: 120px;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--color-white);
+  box-shadow: 0 4px 16px rgba(17,24,39,0.16);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  z-index: 200;
+  cursor: pointer;
+}
+
+/* ══════════════════════════════════════════════
+   SCREEN 1 — LANDING PAGE
+══════════════════════════════════════════════ */
+/* Hero — nền sáng, text navy, CTA vàng */
+.hero {
+  background: var(--color-bg-light);
+  padding: var(--space-16) 0 var(--space-12);
+  border-bottom: 1px solid var(--color-border);
+}
+.hero__inner {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+.hero__eyebrow {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-blue);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: var(--space-3);
+}
+.hero__title {
+  font-size: var(--text-3xl);
+  line-height: 46px;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+.hero__title mark {
+  background: none;
+  color: var(--color-blue);
+}
+.hero__body {
+  font-size: var(--text-base);
+  line-height: 26px;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-8);
+  max-width: 480px;
+}
+.hero__actions { display: flex; gap: var(--space-3); flex-wrap: wrap; }
+/* Hero visual */
+.hero__visual {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+}
+.hero__visual-title {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-4);
+}
+.mini-kpi-grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); margin-bottom: var(--space-4); }
+.mini-kpi {
+  background: var(--color-bg-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+}
+.mini-kpi__val { font-size: var(--text-xl); font-weight: 700; color: var(--color-navy); line-height: 32px; }
+.mini-kpi__label { font-size: 12px; color: var(--color-text-secondary); margin-top: 2px; }
+.mini-kpi__change { font-size: 11px; font-weight: 600; color: var(--color-success); margin-top: 2px; }
+.mini-bar { height: 6px; background: var(--color-border); border-radius: var(--radius-pill); overflow: hidden; margin-top: var(--space-3); }
+.mini-bar__fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-pill); }
+.mini-creator-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-bg-light);
+  font-size: 13px;
+}
+.mini-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--color-white);
+  flex-shrink: 0;
+}
+
+/* Stats strip */
+.stats-strip {
+  padding: var(--space-10) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.stats-strip__grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-lg); overflow: hidden; }
+.stat-item { background: var(--color-white); padding: var(--space-6); text-align: center; }
+.stat-item__num { font-size: var(--text-2xl); font-weight: 700; color: var(--color-text-primary); line-height: 38px; }
+.stat-item__label { font-size: 13px; color: var(--color-text-secondary); margin-top: var(--space-1); }
+
+/* How it works */
+.how-section { padding: var(--space-16) 0; border-bottom: 1px solid var(--color-border); }
+.section-header { text-align: center; margin-bottom: var(--space-12); }
+.section-header__title { font-size: var(--text-xl); line-height: 32px; font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-2); }
+.section-header__sub { font-size: var(--text-base); color: var(--color-text-secondary); }
+.how-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-8); }
+.how-card {
+  background: var(--color-white);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+}
+.how-card__step { font-size: 12px; font-weight: 700; color: var(--color-muted); letter-spacing: 1px; text-transform: uppercase; margin-bottom: var(--space-3); }
+.how-card__icon-wrap {
+  width: 48px; height: 48px;
+  border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  margin-bottom: var(--space-4);
+}
+.how-card__icon-wrap--yellow { background: rgba(255,196,0,.15); }
+.how-card__icon-wrap--blue   { background: rgba(35,63,157,.1); }
+.how-card__icon-wrap--green  { background: rgba(34,197,94,.12); }
+.how-card__title { font-size: var(--text-lg); line-height: 28px; font-weight: 600; color: var(--color-text-primary); margin-bottom: var(--space-2); }
+.how-card__body  { font-size: var(--text-sm); line-height: 22px; color: var(--color-text-secondary); }
+
+/* Privacy section */
+.privacy-section { background: var(--color-navy); padding: var(--space-12) 0; }
+.privacy-section__title { font-size: var(--text-xl); font-weight: 700; color: var(--color-white); text-align: center; margin-bottom: var(--space-8); }
+.privacy-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-8); }
+.privacy-item { display: flex; gap: var(--space-4); }
+.privacy-item__icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.privacy-item__title { font-size: var(--text-sm); font-weight: 700; color: var(--color-white); margin-bottom: 4px; }
+.privacy-item__body  { font-size: 13px; line-height: 20px; color: #CBD5E1; }
+
+/* Landing CTA */
+.landing-cta { padding: var(--space-16) 0; text-align: center; }
+.landing-cta__title { font-size: var(--text-2xl); line-height: 38px; font-weight: 700; margin-bottom: var(--space-3); }
+.landing-cta__sub { font-size: var(--text-base); color: var(--color-text-secondary); margin-bottom: var(--space-8); }
+
+/* ══════════════════════════════════════════════
+   SCREEN 2 — CONSENT
+══════════════════════════════════════════════ */
+.consent-layout {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+}
+.page-eyebrow { font-size: 12px; font-weight: 700; color: var(--color-blue); letter-spacing: 1px; text-transform: uppercase; margin-bottom: var(--space-3); }
+.page-title { font-size: var(--text-2xl); line-height: 38px; font-weight: 700; margin-bottom: var(--space-2); }
+.page-body  { font-size: var(--text-base); line-height: 26px; color: var(--color-text-secondary); margin-bottom: var(--space-8); }
+
+.consent-scope { margin-bottom: var(--space-6); }
+.consent-scope__title { font-size: 13px; font-weight: 700; color: var(--color-text-primary); margin-bottom: var(--space-4); }
+.scope-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-border);
+}
+.scope-row:last-child { border-bottom: none; }
+.scope-row__icon {
+  width: 32px; height: 32px;
+  border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.scope-row__icon--allow { background: rgba(34,197,94,.12); }
+.scope-row__icon--deny  { background: rgba(239,68,68,.1); }
+.scope-row__title { font-size: var(--text-sm); font-weight: 600; line-height: 22px; }
+.scope-row__desc  { font-size: 13px; color: var(--color-text-secondary); line-height: 20px; }
+
+.policy-box {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-5);
+  max-height: 160px;
+  overflow-y: auto;
+  margin-bottom: var(--space-6);
+  background: var(--color-bg-light);
+}
+.policy-box p { font-size: 13px; line-height: 20px; color: var(--color-text-secondary); margin-bottom: var(--space-3); }
+.policy-box p:last-child { margin-bottom: 0; }
+.policy-box strong { color: var(--color-text-primary); }
+
+.checkbox-group { margin-bottom: var(--space-6); }
+.checkbox-row { display: flex; gap: var(--space-3); align-items: flex-start; margin-bottom: var(--space-4); cursor: pointer; }
+.checkbox-row input[type=checkbox] { width: 18px; height: 18px; accent-color: var(--color-navy); flex-shrink: 0; margin-top: 2px; cursor: pointer; }
+.checkbox-row:focus-within { outline: 2px solid rgba(255,196,0,.5); outline-offset: 2px; border-radius: var(--radius-sm); }
+.checkbox-label { font-size: var(--text-sm); line-height: 22px; }
+.checkbox-label a { color: var(--color-blue); text-decoration: underline; }
+
+.btn-full {
+  width: 100%; height: 48px;
+  border-radius: var(--radius-pill);
+  background: var(--color-navy);
+  color: var(--color-white);
+  font-size: var(--text-base);
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-full:hover:not(:disabled) { opacity: .88; }
+.btn-full:focus { outline: 2px solid rgba(255,196,0,.5); outline-offset: 2px; }
+.btn-full:disabled { opacity: .4; cursor: not-allowed; }
+.consent-note { text-align: center; font-size: 12px; color: var(--color-muted); margin-top: var(--space-3); }
+
+/* ══════════════════════════════════════════════
+   SCREEN 3 — CONNECT TIKTOK
+══════════════════════════════════════════════ */
+.connect-layout {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: var(--space-12) var(--space-6);
+}
+.tab-bar {
+  display: flex;
+  background: var(--color-bg-light);
+  border-radius: var(--radius-pill);
+  padding: 3px;
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-8);
+}
+.tab-btn {
+  flex: 1;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all .15s;
+}
+.tab-btn.active {
+  background: var(--color-white);
+  color: var(--color-text-primary);
+  font-weight: 700;
+  box-shadow: var(--shadow-sm);
+}
+
+.oauth-card {
+  background: var(--color-bg-light);
+  border-radius: var(--radius-lg);
+  padding: var(--space-10);
+  text-align: center;
+  border: 1px solid var(--color-border);
+}
+.oauth-card__icon { font-size: 48px; margin-bottom: var(--space-4); }
+.oauth-card__title { font-size: var(--text-xl); line-height: 32px; font-weight: 700; margin-bottom: var(--space-2); }
+.oauth-card__body { font-size: var(--text-sm); line-height: 22px; color: var(--color-text-secondary); margin-bottom: var(--space-6); max-width: 420px; margin-left: auto; margin-right: auto; }
+.scope-chips { display: flex; gap: var(--space-2); flex-wrap: wrap; justify-content: center; margin-bottom: var(--space-6); }
+.scope-chip { background: rgba(35,63,157,.1); color: var(--color-blue); font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: var(--radius-pill); }
+.btn-tiktok {
+  width: 100%; height: 52px;
+  border-radius: var(--radius-pill);
+  background: #010101;
+  color: var(--color-white);
+  font-size: var(--text-base);
+  font-weight: 700;
+  border: none;
+  display: flex; align-items: center; justify-content: center; gap: var(--space-2);
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.btn-tiktok:hover { opacity: .85; }
+.btn-tiktok:focus { outline: 2px solid rgba(255,196,0,.5); outline-offset: 2px; }
+.oauth-note { font-size: 12px; color: var(--color-muted); margin-top: var(--space-4); }
+
+.manual-form { display: flex; flex-direction: column; gap: var(--space-5); }
+.form-group { display: flex; flex-direction: column; }
+.video-add-row { display: flex; gap: var(--space-2); }
+.video-add-row .form-input { flex: 1; }
+.btn-add {
+  height: 44px;
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-add:hover { background: var(--color-border); }
+.video-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+.video-chip {
+  display: flex; align-items: center; gap: 6px;
+  background: var(--color-bg-light);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--color-text-primary);
+}
+.video-chip__remove { background: none; border: none; color: var(--color-muted); font-size: 14px; line-height: 1; cursor: pointer; }
+
+/* ══════════════════════════════════════════════
+   DASHBOARD SHELL
+══════════════════════════════════════════════ */
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: calc(100vh - 56px);
+}
+
+/* Sidebar */
+.ds-sidebar { border-right: 1px solid var(--color-border); padding: var(--space-6) 0; background: var(--color-white); }
+.ds-sidebar--dark { background: var(--color-navy); border-right: none; }
+
+.ds-sidebar__user { padding: 0 var(--space-5) var(--space-5); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-3); }
+.ds-sidebar--dark .ds-sidebar__user { border-color: rgba(255,255,255,.08); }
+
+.ds-avatar { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; color: var(--color-navy); margin-bottom: var(--space-2); }
+.ds-username { font-size: var(--text-sm); font-weight: 700; color: var(--color-text-primary); }
+.ds-sidebar--dark .ds-username { color: var(--color-white); }
+.ds-handle { font-size: 12px; color: var(--color-muted); }
+.ds-sidebar--dark .ds-handle { color: rgba(255,255,255,.45); }
+.ds-connect-status { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; margin-top: 6px; }
+
+.ds-nav { list-style: none; }
+.ds-nav__item { }
+.ds-nav__link {
+  display: flex; align-items: center; gap: var(--space-2);
+  padding: 10px var(--space-5);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  border-left: 3px solid transparent;
+  cursor: pointer;
+  transition: all .15s;
+  text-decoration: none;
+}
+.ds-nav__link:hover { color: var(--color-text-primary); background: var(--color-bg-light); }
+.ds-nav__link.active { color: var(--color-text-primary); font-weight: 700; background: var(--color-bg-light); border-left-color: var(--color-primary); }
+.ds-sidebar--dark .ds-nav__link { color: rgba(255,255,255,.55); }
+.ds-sidebar--dark .ds-nav__link:hover { background: rgba(255,255,255,.05); color: var(--color-white); }
+.ds-sidebar--dark .ds-nav__link.active { background: rgba(255,196,0,.08); color: var(--color-white); border-left-color: var(--color-primary); }
+.ds-nav__divider { height: 1px; background: var(--color-border); margin: var(--space-3) var(--space-5); }
+.ds-sidebar--dark .ds-nav__divider { background: rgba(255,255,255,.08); }
+
+/* Main content */
+.ds-main { padding: var(--space-8); background: var(--color-bg-light); }
+.ds-main--white { background: var(--color-white); }
+
+.ds-topbar { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: var(--space-6); }
+.ds-page-title { font-size: var(--text-xl); line-height: 32px; font-weight: 700; color: var(--color-text-primary); }
+.ds-page-meta  { font-size: 13px; color: var(--color-muted); margin-top: 2px; }
+.ds-topbar__actions { display: flex; gap: var(--space-2); }
+
+/* Warning banner */
+.warn-banner {
+  display: flex; align-items: center; gap: var(--space-3);
+  background: rgba(239,68,68,.06);
+  border: 1px solid rgba(239,68,68,.2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+  font-size: 13px;
+}
+.warn-banner__text { flex: 1; color: var(--color-danger); }
+.btn-reconnect {
+  height: 30px; padding: 0 var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-danger);
+  color: var(--color-white);
+  border: none;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+/* KPI grid */
+.kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-4); margin-bottom: var(--space-5); }
+.kpi-card { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+.kpi-card__label { font-size: 12px; font-weight: 600; color: var(--color-muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: var(--space-2); }
+.kpi-card__value { font-size: var(--text-2xl); font-weight: 700; line-height: 38px; color: var(--color-navy); }
+.kpi-card__change { font-size: 12px; font-weight: 600; margin-top: 4px; }
+.kpi-card__change--up   { color: var(--color-success); }
+.kpi-card__change--down { color: var(--color-danger); }
+.kpi-card__change--blue { color: var(--color-blue); }
+
+/* Section card */
+.sc { background: var(--color-white); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-6); margin-bottom: var(--space-5); }
+.sc__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-5); }
+.sc__title { font-size: var(--text-lg); line-height: 28px; font-weight: 600; }
+.sc__action { font-size: 13px; color: var(--color-blue); font-weight: 500; cursor: pointer; }
+.sc__action:hover { text-decoration: underline; }
+
+/* Grid helpers */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-5); }
+.g5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-4); }
+
+/* Table */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  font-size: 11px; font-weight: 700;
+  color: var(--color-muted);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  text-align: left;
+}
+.data-table td {
+  padding: var(--space-4) 0;
+  border-bottom: 1px solid var(--color-bg-light);
+  font-size: var(--text-sm);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table th.right, .data-table td.right { text-align: right; }
+
+/* Video row */
+.video-row { display: flex; align-items: center; gap: var(--space-3); }
+.video-thumb { width: 52px; height: 36px; border-radius: var(--radius-sm); background: var(--color-bg-light); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.video-name { font-size: 13px; font-weight: 600; }
+.video-date { font-size: 12px; color: var(--color-muted); }
+
+/* Creator row */
+.creator-row { display: flex; align-items: center; gap: var(--space-3); }
+.creator-avatar { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: var(--color-white); flex-shrink: 0; }
+.creator-name { font-size: 13px; font-weight: 600; }
+.creator-handle { font-size: 12px; color: var(--color-muted); }
+.rank-badge { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; background: var(--color-bg-light); color: var(--color-text-primary); }
+.rank-badge--gold { background: var(--color-primary); color: var(--color-navy); }
+
+/* Campaign mini card */
+.camp-item { display: flex; align-items: center; gap: var(--space-4); padding: var(--space-4) 0; border-bottom: 1px solid var(--color-bg-light); }
+.camp-item:last-child { border-bottom: none; }
+.camp-icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(35,63,157,.1); display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.camp-name { font-size: var(--text-sm); font-weight: 600; }
+.camp-meta { font-size: 12px; color: var(--color-muted); margin-top: 2px; }
+.camp-view { font-size: var(--text-lg); font-weight: 700; color: var(--color-navy); }
+.camp-view-lbl { font-size: 11px; color: var(--color-muted); }
+
+/* Progress bar */
+.progress-wrap { margin-top: var(--space-6); padding-top: var(--space-5); border-top: 1px solid var(--color-border); }
+.progress-label { display: flex; justify-content: space-between; font-size: 13px; margin-bottom: var(--space-2); }
+.progress-label span:last-child { font-weight: 700; }
+.progress-bar { height: 8px; background: var(--color-border); border-radius: var(--radius-pill); overflow: hidden; }
+.progress-bar__fill { height: 100%; background: var(--color-primary); border-radius: var(--radius-pill); }
+.progress-note { font-size: 12px; color: var(--color-muted); margin-top: 4px; }
+
+/* Inline data quality rows */
+.dq-row { display: flex; justify-content: space-between; align-items: center; padding: var(--space-3) 0; border-bottom: 1px solid var(--color-bg-light); font-size: var(--text-sm); }
+.dq-row:last-child { border-bottom: none; }
+.dq-label { color: var(--color-text-secondary); }
+.dq-value { font-weight: 700; }
+.dq-value--ok   { color: var(--color-success); }
+.dq-value--warn { color: var(--color-danger); }
+.dq-value--mid  { color: #d97706; }
+
+/* Bar chart */
+.bar-chart { display: flex; align-items: flex-end; gap: var(--space-2); height: 120px; }
+.bar-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.bar-fill { width: 100%; border-radius: var(--radius-sm) var(--radius-sm) 0 0; background: rgba(35,63,157,.25); transition: background .2s; }
+.bar-fill:hover { background: var(--color-blue); }
+.bar-fill--highlight { background: var(--color-primary); }
+.bar-fill--highlight:hover { background: var(--color-primary-dark); }
+.bar-lbl { font-size: 10px; color: var(--color-muted); }
+
+/* Connection status rows */
+.conn-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-5); padding-bottom: var(--space-5); border-bottom: 1px solid var(--color-border); margin-bottom: var(--space-5); }
+.conn-field__label { font-size: 12px; color: var(--color-muted); margin-bottom: 4px; }
+.conn-field__value { font-size: var(--text-sm); font-weight: 600; }
+
+/* Alert chip */
+.alert-chip { display: inline-flex; align-items: center; gap: 4px; background: rgba(239,68,68,.1); color: var(--color-danger); font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: var(--radius-pill); border: 1px solid rgba(239,68,68,.2); }
+
+/* CPV coloring */
+.cpv-good { color: #16a34a; font-weight: 700; }
+.cpv-mid  { color: var(--color-text-primary); font-weight: 700; }
+
+/* ══════════════════════════════
+   RESPONSIVE
+══════════════════════════════ */
+@media (max-width: 768px) {
+  .hero__inner { grid-template-columns: 1fr; }
+  .hero__visual { display: none; }
+  .how-grid, .privacy-grid, .stats-strip__grid { grid-template-columns: 1fr; }
+  .kpi-grid, .g5 { grid-template-columns: 1fr 1fr; }
+  .g2 { grid-template-columns: 1fr; }
+  .dashboard-shell { grid-template-columns: 1fr; }
+  .ds-sidebar { display: none; }
+  .footer__grid { grid-template-columns: 1fr; gap: var(--space-8); }
+  .app-footer { margin-top: var(--space-8); }
+  .hero__title { font-size: 28px; line-height: 38px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     HEADER
+════════════════════════════════════════ -->
+<header class="app-header">
+  <div class="container">
+    <!-- Left: Category button -->
+    <div class="header__left">
+      <button class="category-button" aria-label="Danh mục">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        Danh mục
+      </button>
+    </div>
+
+    <!-- Center: Logo -->
+    <div class="header__center">
+      <span class="logo-mark">YODY</span>
+      <span class="logo-sub">Creator Program</span>
+    </div>
+
+    <!-- Right: Demo nav + icons -->
+    <div class="header__right">
+      <div class="nav-steps" role="navigation" aria-label="Demo screens">
+        <button class="nav-step active" id="nav-1" onclick="goTo(1)">Landing</button>
+        <button class="nav-step" id="nav-2" onclick="goTo(2)">Consent</button>
+        <button class="nav-step" id="nav-3" onclick="goTo(3)">Kết nối</button>
+        <button class="nav-step" id="nav-4" onclick="goTo(4)">KOL/KOC</button>
+        <button class="nav-step" id="nav-5" onclick="goTo(5)">BI</button>
+      </div>
+      <button class="icon-button" aria-label="Tài khoản">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════════════════════
+     SCREEN 1 — LANDING PAGE
+════════════════════════════════════════ -->
+<div class="screen active" id="screen-1">
+
+  <!-- Hero: light bg, text-primary, CTA yellow -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero__inner">
+        <div>
+          <div class="hero__eyebrow">YODY Creator Program</div>
+          <h1 class="hero__title">
+            Đo lường hiệu quả TikTok<br/>
+            <mark>minh bạch và chuyên nghiệp</mark>
+          </h1>
+          <p class="hero__body">
+            Kết nối tài khoản TikTok, xem performance video theo từng campaign và nhận đánh giá booking từ YODY — tất cả trên một nền tảng, không cần báo cáo thủ công.
+          </p>
+          <div class="hero__actions">
+            <button class="btn-primary btn-primary--lg" onclick="goTo(2)">
+              Tham gia ngay
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </button>
+            <button class="btn-secondary" style="height:48px;font-size:16px">Tìm hiểu thêm</button>
+          </div>
+        </div>
+
+        <!-- Mini dashboard preview -->
+        <div class="hero__visual">
+          <div class="hero__visual-title">📊 Dashboard của bạn — Preview</div>
+          <div class="mini-kpi-grid">
+            <div class="mini-kpi">
+              <div class="mini-kpi__val">3.2M</div>
+              <div class="mini-kpi__label">Tổng view</div>
+              <div class="mini-kpi__change">↑ +12% tháng này</div>
+            </div>
+            <div class="mini-kpi">
+              <div class="mini-kpi__val">8</div>
+              <div class="mini-kpi__label">Video tracking</div>
+              <div class="mini-kpi__change">↑ +2 tuần này</div>
+            </div>
+          </div>
+          <div style="margin-bottom:var(--space-3)">
+            <div style="font-size:12px;color:var(--color-muted);margin-bottom:4px">Tiến độ YODY Summer 2026</div>
+            <div class="mini-bar"><div class="mini-bar__fill" style="width:68%"></div></div>
+            <div style="font-size:11px;color:var(--color-muted);margin-top:4px;display:flex;justify-content:space-between"><span>2.05M views</span><span>68% / 3M target</span></div>
+          </div>
+          <div style="font-size:12px;font-weight:700;color:var(--color-muted);margin-bottom:var(--space-2)">TOP CREATORS</div>
+          <div class="mini-creator-row">
+            <div class="mini-avatar" style="background:var(--color-blue)">H</div>
+            <div style="flex:1;font-size:13px;font-weight:600">Hương Trà</div>
+            <div style="font-size:13px;font-weight:700">1.2M</div>
+            <span class="chip chip--success">Connected</span>
+          </div>
+          <div class="mini-creator-row">
+            <div class="mini-avatar" style="background:var(--color-navy)">M</div>
+            <div style="flex:1;font-size:13px;font-weight:600">Minh Tú Beauty</div>
+            <div style="font-size:13px;font-weight:700">5.8M</div>
+            <span class="chip chip--success">Connected</span>
+          </div>
+          <div class="mini-creator-row" style="border-bottom:none">
+            <div class="mini-avatar" style="background:var(--color-muted)">A</div>
+            <div style="flex:1;font-size:13px;font-weight:600">An Khương</div>
+            <div style="font-size:13px;font-weight:700">—</div>
+            <span class="chip chip--warning">Chờ kết nối</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats strip -->
+  <section class="stats-strip">
+    <div class="container">
+      <div class="stats-strip__grid">
+        <div class="stat-item">
+          <div class="stat-item__num">200+</div>
+          <div class="stat-item__label">KOL/KOC tham gia</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item__num">50+</div>
+          <div class="stat-item__label">Campaign đã tracking</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item__num">12M+</div>
+          <div class="stat-item__label">Tổng view đo lường</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-item__num">₫148</div>
+          <div class="stat-item__label">CPV trung bình</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how-section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-header__title">Cách hoạt động</div>
+        <div class="section-header__sub">3 bước đơn giản để bắt đầu theo dõi hiệu quả</div>
+      </div>
+      <div class="how-grid">
+        <div class="how-card">
+          <div class="how-card__step">Bước 01</div>
+          <div class="how-card__icon-wrap how-card__icon-wrap--yellow" aria-hidden="true">📝</div>
+          <div class="how-card__title">Đọc & Đồng ý</div>
+          <div class="how-card__body">Xem rõ dữ liệu nào sẽ được thu thập, mục đích sử dụng và quyền của bạn. Minh bạch 100%, không điều khoản ẩn.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-card__step">Bước 02</div>
+          <div class="how-card__icon-wrap how-card__icon-wrap--blue" aria-hidden="true">🔗</div>
+          <div class="how-card__title">Kết nối TikTok</div>
+          <div class="how-card__body">Đăng nhập bằng TikTok OAuth an toàn hoặc nhập thông tin thủ công. Bạn toàn quyền kiểm soát dữ liệu của mình.</div>
+        </div>
+        <div class="how-card">
+          <div class="how-card__step">Bước 03</div>
+          <div class="how-card__icon-wrap how-card__icon-wrap--green" aria-hidden="true">📊</div>
+          <div class="how-card__title">Xem Performance</div>
+          <div class="how-card__body">Dashboard cá nhân cập nhật view, campaign và hiệu quả video theo lịch tự động — không cần gửi báo cáo thủ công.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Privacy — navy background -->
+  <section class="privacy-section">
+    <div class="container">
+      <div class="privacy-section__title">🔒 Cam kết bảo mật dữ liệu</div>
+      <div class="privacy-grid">
+        <div class="privacy-item">
+          <div class="privacy-item__icon" aria-hidden="true">✅</div>
+          <div>
+            <div class="privacy-item__title">Chỉ lấy dữ liệu cần thiết</div>
+            <div class="privacy-item__body">Thu thập view count và thông tin video public. Không truy cập tin nhắn hay dữ liệu cá nhân.</div>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-item__icon" aria-hidden="true">🔑</div>
+          <div>
+            <div class="privacy-item__title">Mã hóa & bảo mật</div>
+            <div class="privacy-item__body">Token được mã hóa AES-256. Phân quyền RBAC theo role — chỉ đúng người mới được xem đúng dữ liệu.</div>
+          </div>
+        </div>
+        <div class="privacy-item">
+          <div class="privacy-item__icon" aria-hidden="true">↩️</div>
+          <div>
+            <div class="privacy-item__title">Thu hồi bất cứ lúc nào</div>
+            <div class="privacy-item__body">Ngắt kết nối TikTok và yêu cầu xóa dữ liệu ngay từ Dashboard cá nhân. Không cần liên hệ qua email.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="landing-cta">
+    <div class="container">
+      <div class="landing-cta__title">Sẵn sàng tham gia?</div>
+      <div class="landing-cta__sub">Được YODY mời tham gia? Bắt đầu ngay để kết nối và xem hiệu quả của bạn.</div>
+      <button class="btn-primary btn-primary--lg" onclick="goTo(2)">Bắt đầu ngay</button>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="container">
+      <div class="footer__grid">
+        <!-- Col 1 -->
+        <div>
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:var(--space-4)">
+            <span class="logo-mark">YODY</span>
+            <span style="font-size:13px;color:#CBD5E1;font-weight:600">Creator Program</span>
+          </div>
+          <p class="footer__text" style="margin-bottom:var(--space-5)">Nền tảng đo lường hiệu quả KOL/KOC trên TikTok của YODY — minh bạch, tự động và dựa trên dữ liệu.</p>
+          <div class="footer__title">Nhận thông báo</div>
+          <input class="footer__input" type="email" placeholder="Email của bạn" aria-label="Email đăng ký nhận tin"/>
+          <button class="btn-primary" style="margin-top:4px;width:100%">Đăng ký</button>
+          <div style="display:flex;gap:var(--space-2);margin-top:var(--space-4)">
+            <button class="social-button" aria-label="TikTok">🎵</button>
+            <button class="social-button" aria-label="Facebook">📘</button>
+            <button class="social-button" aria-label="Instagram">📸</button>
+          </div>
+        </div>
+        <!-- Col 2 -->
+        <div>
+          <div class="footer__title">Creator</div>
+          <a class="footer__menu-item" href="#">Tham gia chương trình</a>
+          <a class="footer__menu-item" href="#">Chính sách dữ liệu</a>
+          <a class="footer__menu-item" href="#">Hướng dẫn kết nối TikTok</a>
+          <a class="footer__menu-item" href="#">FAQ</a>
+        </div>
+        <!-- Col 3 -->
+        <div>
+          <div class="footer__title">Về YODY</div>
+          <a class="footer__menu-item" href="#">Giới thiệu</a>
+          <a class="footer__menu-item" href="#">Tin tức</a>
+          <a class="footer__menu-item" href="#">Hệ thống cửa hàng</a>
+          <a class="footer__menu-item" href="#">Tuyển dụng</a>
+        </div>
+        <!-- Col 4 -->
+        <div>
+          <div class="footer__title">Liên hệ</div>
+          <div class="footer__text" style="margin-bottom:var(--space-3)">
+            <span style="color:#CBD5E1">📞</span> 1800 2086
+          </div>
+          <div class="footer__text" style="margin-bottom:var(--space-3)">
+            <span style="color:#CBD5E1">✉️</span> creator@yody.vn
+          </div>
+          <div class="footer__text">
+            <span style="color:#EF4444">📍</span> 83 Trần Quốc Toản, Hà Nội
+          </div>
+        </div>
+      </div>
+      <div class="footer__legal">
+        <span>© 2026 YODY. Bảo lưu mọi quyền.</span>
+        <div style="display:flex;gap:var(--space-5)">
+          <a href="#" style="color:rgba(255,255,255,.4);">Chính sách bảo mật</a>
+          <a href="#" style="color:rgba(255,255,255,.4);">Điều khoản sử dụng</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 2 — CONSENT
+════════════════════════════════════════ -->
+<div class="screen" id="screen-2">
+  <div class="consent-layout">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <span>Trang chủ</span><span class="breadcrumb__sep">/</span>
+      <span>Creator Program</span><span class="breadcrumb__sep">/</span>
+      <span class="breadcrumb__active">Đồng ý dữ liệu</span>
+    </nav>
+
+    <div class="page-eyebrow">Bước 1 / 3 — Đồng ý chia sẻ dữ liệu</div>
+    <h1 class="page-title">Trước khi bắt đầu, hãy đọc kỹ điều này</h1>
+    <p class="page-body">Để đo lường hiệu quả campaign chính xác, YODY cần truy cập một số dữ liệu từ tài khoản TikTok của bạn. Dưới đây là thông tin đầy đủ, minh bạch.</p>
+
+    <!-- Scope table -->
+    <div class="sc" style="margin-bottom:var(--space-6)">
+      <div class="consent-scope__title">📋 Phạm vi dữ liệu thu thập</div>
+      <div class="scope-row">
+        <div class="scope-row__icon scope-row__icon--allow" aria-hidden="true">✅</div>
+        <div>
+          <div class="scope-row__title">Thông tin profile cơ bản</div>
+          <div class="scope-row__desc">Tên hiển thị, avatar, username — để xác thực danh tính creator trong hệ thống</div>
+        </div>
+      </div>
+      <div class="scope-row">
+        <div class="scope-row__icon scope-row__icon--allow" aria-hidden="true">✅</div>
+        <div>
+          <div class="scope-row__title">Danh sách video public</div>
+          <div class="scope-row__desc">URL và metadata video đã đăng công khai liên quan đến campaign YODY</div>
+        </div>
+      </div>
+      <div class="scope-row">
+        <div class="scope-row__icon scope-row__icon--allow" aria-hidden="true">✅</div>
+        <div>
+          <div class="scope-row__title">Số liệu tương tác</div>
+          <div class="scope-row__desc">View count, like, comment của video thuộc campaign — cập nhật tự động 1–4 lần/ngày</div>
+        </div>
+      </div>
+      <div class="scope-row">
+        <div class="scope-row__icon scope-row__icon--deny" aria-hidden="true">🚫</div>
+        <div>
+          <div class="scope-row__title">Tin nhắn riêng tư</div>
+          <div class="scope-row__desc">YODY không thu thập bất kỳ tin nhắn hay thông tin liên lạc cá nhân nào</div>
+        </div>
+      </div>
+      <div class="scope-row">
+        <div class="scope-row__icon scope-row__icon--deny" aria-hidden="true">🚫</div>
+        <div>
+          <div class="scope-row__title">Mật khẩu / thông tin thanh toán</div>
+          <div class="scope-row__desc">Tuyệt đối không thu thập dưới bất kỳ hình thức nào</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Policy text scrollbox -->
+    <div class="policy-box">
+      <p><strong>Mục đích sử dụng:</strong> Đo lường hiệu quả campaign marketing, hỗ trợ team BI theo dõi view TikTok và tính toán CPV (Cost Per View) để đánh giá booking.</p>
+      <p><strong>Thời hạn lưu trữ:</strong> Dữ liệu lưu trữ 24 tháng kể từ ngày kết thúc campaign gần nhất. Bạn có thể yêu cầu xóa sớm hơn bất kỳ lúc nào.</p>
+      <p><strong>Bên tiếp cận:</strong> Chỉ nhân viên YODY có role BI, Account, Admin mới được xem dữ liệu theo phân quyền RBAC. Không chia sẻ với bên thứ ba ngoài trường hợp pháp luật yêu cầu.</p>
+      <p><strong>Quyền của bạn:</strong> Xem, chỉnh sửa, thu hồi quyền và yêu cầu xóa dữ liệu bất kỳ lúc nào từ Dashboard cá nhân.</p>
+    </div>
+
+    <!-- Checkboxes -->
+    <div class="checkbox-group">
+      <label class="checkbox-row">
+        <input type="checkbox" id="ck1" onchange="updateConsent()"/>
+        <span class="checkbox-label">Tôi đã đọc và đồng ý với <a href="#">Điều khoản dịch vụ</a> và <a href="#">Chính sách bảo mật</a> của YODY Creator Program.</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="ck2" onchange="updateConsent()"/>
+        <span class="checkbox-label">Tôi đồng ý cho YODY thu thập và xử lý dữ liệu TikTok của tôi theo phạm vi đã nêu ở trên.</span>
+      </label>
+      <label class="checkbox-row">
+        <input type="checkbox" id="ck3" onchange="updateConsent()"/>
+        <span class="checkbox-label">Tôi hiểu rằng có thể thu hồi đồng ý bất kỳ lúc nào từ Dashboard cá nhân.</span>
+      </label>
+    </div>
+
+    <button class="btn-full" id="consent-btn" disabled onclick="goTo(3)">Tôi đồng ý — Tiếp tục</button>
+    <p class="consent-note">Consent được ghi nhận kèm timestamp, IP và phiên bản v1.0</p>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 3 — CONNECT TIKTOK
+════════════════════════════════════════ -->
+<div class="screen" id="screen-3">
+  <div class="connect-layout">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <span>Trang chủ</span><span class="breadcrumb__sep">/</span>
+      <span>Creator Program</span><span class="breadcrumb__sep">/</span>
+      <span class="breadcrumb__active">Kết nối TikTok</span>
+    </nav>
+
+    <div class="page-eyebrow">Bước 2 / 3 — Kết nối tài khoản</div>
+    <h1 class="page-title">Kết nối TikTok</h1>
+    <p class="page-body">Chọn phương thức phù hợp. OAuth chính thức cho phép hệ thống tự động cập nhật view — không cần báo cáo thủ công.</p>
+
+    <!-- Tab bar -->
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn active" role="tab" aria-selected="true" onclick="switchTab('oauth', this)">🔐 TikTok Login (Khuyến nghị)</button>
+      <button class="tab-btn" role="tab" aria-selected="false" onclick="switchTab('manual', this)">✏️ Nhập thủ công</button>
+    </div>
+
+    <!-- OAuth tab -->
+    <div id="tab-oauth" role="tabpanel">
+      <div class="oauth-card">
+        <div class="oauth-card__icon" aria-hidden="true">🎵</div>
+        <div class="oauth-card__title">Đăng nhập bằng TikTok</div>
+        <div class="oauth-card__body">Ủy quyền an toàn qua TikTok OAuth. Hệ thống tự động lấy view count theo lịch mà không cần bạn gửi số liệu thủ công.</div>
+        <div class="scope-chips" aria-label="Quyền yêu cầu">
+          <span class="scope-chip">user.info.basic</span>
+          <span class="scope-chip">video.list</span>
+          <span class="scope-chip">video.insights</span>
+        </div>
+        <button class="btn-tiktok" onclick="simulateTikTokLogin()" aria-label="Đăng nhập bằng TikTok">
+          <span aria-hidden="true">🎵</span> Tiếp tục với TikTok
+        </button>
+        <p class="oauth-note">Bạn sẽ được chuyển đến trang xác thực chính thức của TikTok. YODY không lưu mật khẩu.</p>
+      </div>
+    </div>
+
+    <!-- Manual tab -->
+    <div id="tab-manual" style="display:none" role="tabpanel">
+      <div class="manual-form">
+        <div class="form-group">
+          <label class="form-label" for="tt-username">Username TikTok *</label>
+          <input class="form-input" id="tt-username" type="text" placeholder="@username" autocomplete="off"/>
+          <div class="form-help">Ví dụ: @huongtra.official</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tt-url">Profile URL</label>
+          <input class="form-input" id="tt-url" type="url" placeholder="https://www.tiktok.com/@username"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Link video tham gia campaign *</label>
+          <div class="form-help" style="margin-bottom:var(--space-2)">Nhập URL từng video đã đăng — hệ thống sẽ tracking view định kỳ</div>
+          <div class="video-add-row">
+            <input class="form-input" id="video-input" type="url" placeholder="https://www.tiktok.com/@user/video/..."/>
+            <button class="btn-add" onclick="addVideoChip()" type="button">+ Thêm</button>
+          </div>
+          <div class="video-chips" id="video-chips">
+            <div class="video-chip">🎵 tiktok.com/video/72940001 <button class="video-chip__remove" onclick="this.parentElement.remove()" aria-label="Xóa video">×</button></div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="tt-name">Tên hiển thị / Nghệ danh</label>
+          <input class="form-input" id="tt-name" type="text" placeholder="Tên bạn muốn hiển thị trên báo cáo"/>
+        </div>
+        <button class="btn-full" onclick="goTo(4)">Xác nhận & Tạo hồ sơ</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 4 — KOL/KOC DASHBOARD
+════════════════════════════════════════ -->
+<div class="screen" id="screen-4">
+  <div class="dashboard-shell">
+
+    <!-- Sidebar -->
+    <aside class="ds-sidebar" aria-label="Navigation">
+      <div class="ds-sidebar__user">
+        <div class="ds-avatar" style="background:var(--color-primary)" aria-hidden="true">H</div>
+        <div class="ds-username">Hương Trà</div>
+        <div class="ds-handle">@huongtra.official</div>
+        <div class="ds-connect-status">
+          <span style="color:var(--color-success)">●</span>
+          <span style="font-size:11px;font-weight:700;color:var(--color-success)">TikTok đã kết nối</span>
+        </div>
+      </div>
+      <ul class="ds-nav" role="navigation">
+        <li><span class="ds-nav__link active">📊 Tổng quan</span></li>
+        <li><span class="ds-nav__link">🎬 Video của tôi</span></li>
+        <li><span class="ds-nav__link">📋 Campaign</span></li>
+        <li><span class="ds-nav__link">📈 Hiệu quả</span></li>
+        <li><span class="ds-nav__link">🔗 Kết nối TikTok</span></li>
+        <div class="ds-nav__divider"></div>
+        <li><span class="ds-nav__link">⚙️ Cài đặt</span></li>
+        <li><span class="ds-nav__link" onclick="goTo(5)" style="cursor:pointer">→ BI Dashboard</span></li>
+      </ul>
+    </aside>
+
+    <!-- Main -->
+    <main class="ds-main">
+      <div class="ds-topbar">
+        <div>
+          <div class="ds-page-title">Xin chào, Hương Trà 👋</div>
+          <div class="ds-page-meta">Cập nhật lần cuối: 12/05/2026 lúc 09:30 · Tự động mỗi 6 tiếng</div>
+        </div>
+        <div class="ds-topbar__actions">
+          <button class="btn-outline-sm">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            Xuất báo cáo
+          </button>
+          <button class="btn-primary">Thêm video</button>
+        </div>
+      </div>
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-card__label">Tổng view</div>
+          <div class="kpi-card__value">3.2M</div>
+          <div class="kpi-card__change kpi-card__change--up">↑ +12% so với tháng trước</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Video đang tracking</div>
+          <div class="kpi-card__value">8</div>
+          <div class="kpi-card__change kpi-card__change--up">↑ +2 video tuần này</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Campaign tham gia</div>
+          <div class="kpi-card__value">2</div>
+          <div class="kpi-card__change kpi-card__change--blue">1 sắp hết deadline</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Avg. view / video</div>
+          <div class="kpi-card__value">400K</div>
+          <div class="kpi-card__change kpi-card__change--down">↓ -5% so với kỳ trước</div>
+        </div>
+      </div>
+
+      <!-- Video + Campaign -->
+      <div class="g2">
+        <!-- Videos -->
+        <div class="sc">
+          <div class="sc__header">
+            <span class="sc__title">🎬 Video gần đây</span>
+            <span class="sc__action">Xem tất cả</span>
+          </div>
+          <table class="data-table" aria-label="Danh sách video">
+            <thead>
+              <tr>
+                <th>Video</th>
+                <th class="right">View</th>
+                <th class="right">Trạng thái</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <div class="video-row">
+                    <div class="video-thumb" aria-hidden="true">🎵</div>
+                    <div>
+                      <div class="video-name">YODY Summer Collection</div>
+                      <div class="video-date">08/05/2026</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="right" style="font-weight:700">1.2M</td>
+                <td class="right"><span class="chip chip--success">Xác nhận</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="video-row">
+                    <div class="video-thumb" aria-hidden="true">🎵</div>
+                    <div>
+                      <div class="video-name">Outfit YODY Review</div>
+                      <div class="video-date">02/05/2026</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="right" style="font-weight:700">850K</td>
+                <td class="right"><span class="chip chip--success">Xác nhận</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="video-row">
+                    <div class="video-thumb" aria-hidden="true">🎵</div>
+                    <div>
+                      <div class="video-name">Mặc gì đi cafe?</div>
+                      <div class="video-date">25/04/2026</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="right" style="font-weight:700">670K</td>
+                <td class="right"><span class="chip chip--warning">Chờ xác nhận</span></td>
+              </tr>
+              <tr>
+                <td>
+                  <div class="video-row">
+                    <div class="video-thumb" aria-hidden="true">🎵</div>
+                    <div>
+                      <div class="video-name">Day in my life #YODY</div>
+                      <div class="video-date">18/04/2026</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="right" style="font-weight:700">480K</td>
+                <td class="right"><span class="chip chip--danger">Thiếu link</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Campaign -->
+        <div class="sc">
+          <div class="sc__header">
+            <span class="sc__title">📋 Campaign đang tham gia</span>
+            <span class="sc__action">Chi tiết</span>
+          </div>
+          <div class="camp-item">
+            <div class="camp-icon" aria-hidden="true">👗</div>
+            <div style="flex:1">
+              <div class="camp-name">YODY Summer 2026</div>
+              <div class="camp-meta">Brand: YODY · Deadline: 15/05/2026</div>
+              <div style="margin-top:4px"><span class="chip chip--success">Đang chạy</span></div>
+            </div>
+            <div style="text-align:right">
+              <div class="camp-view">2.05M</div>
+              <div class="camp-view-lbl">views</div>
+            </div>
+          </div>
+          <div class="camp-item">
+            <div class="camp-icon" style="background:rgba(34,197,94,.12)" aria-hidden="true">🌿</div>
+            <div style="flex:1">
+              <div class="camp-name">YODY Eco Collection</div>
+              <div class="camp-meta">Brand: YODY · Deadline: 30/05/2026</div>
+              <div style="margin-top:4px"><span class="chip chip--warning">Chờ video</span></div>
+            </div>
+            <div style="text-align:right">
+              <div class="camp-view" style="color:var(--color-muted)">—</div>
+              <div class="camp-view-lbl">chưa có video</div>
+            </div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-label">
+              <span>Tiến độ YODY Summer 2026</span>
+              <span>2.05M / 3M views</span>
+            </div>
+            <div class="progress-bar"><div class="progress-bar__fill" style="width:68%"></div></div>
+            <div class="progress-note">68% mục tiêu · Còn 3 ngày · <strong style="color:var(--color-text-primary)">Cần thêm ~950K views</strong></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Connection status -->
+      <div class="sc">
+        <div class="sc__header"><span class="sc__title">🔗 Kết nối TikTok & Dữ liệu cá nhân</span></div>
+        <div class="conn-row">
+          <div>
+            <div class="conn-field__label">Trạng thái</div>
+            <div class="conn-field__value" style="color:var(--color-success)">● Đã kết nối</div>
+          </div>
+          <div>
+            <div class="conn-field__label">Ngày cấp quyền</div>
+            <div class="conn-field__value">10/05/2026</div>
+          </div>
+          <div>
+            <div class="conn-field__label">Token hết hạn</div>
+            <div class="conn-field__value" style="color:#d97706">20/06/2026</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:var(--space-2);flex-wrap:wrap">
+          <button class="btn-outline-sm">🔄 Làm mới token</button>
+          <button class="btn-outline-sm" style="color:var(--color-danger);border-color:rgba(239,68,68,.3)">🔌 Ngắt kết nối TikTok</button>
+          <button class="btn-outline-sm" style="color:var(--color-danger);border-color:rgba(239,68,68,.3)">🗑️ Yêu cầu xóa dữ liệu</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     SCREEN 5 — BI DASHBOARD
+════════════════════════════════════════ -->
+<div class="screen" id="screen-5">
+  <div class="dashboard-shell">
+
+    <!-- BI Sidebar — navy -->
+    <aside class="ds-sidebar ds-sidebar--dark" aria-label="BI Navigation">
+      <div class="ds-sidebar__user" style="padding:var(--space-5) var(--space-5) var(--space-5)">
+        <div style="display:flex;align-items:center;gap:var(--space-2);margin-bottom:var(--space-5)">
+          <span class="logo-mark">YODY</span>
+          <span style="font-size:13px;color:rgba(255,255,255,.6);font-weight:600">BI Internal</span>
+        </div>
+        <div class="ds-avatar" style="background:var(--color-blue)" aria-hidden="true">BI</div>
+        <div class="ds-username">Ngọc Ánh</div>
+        <div class="ds-handle">BI Analyst</div>
+      </div>
+      <ul class="ds-nav" role="navigation">
+        <li><span class="ds-nav__link active">📊 Campaign Overview</span></li>
+        <li><span class="ds-nav__link">👥 Creator Ranking</span></li>
+        <li><span class="ds-nav__link">🎬 Video Ranking</span></li>
+        <li><span class="ds-nav__link">💰 CPV / ROI</span></li>
+        <li><span class="ds-nav__link">⚠️ Data Quality</span></li>
+        <li><span class="ds-nav__link">📤 Export</span></li>
+        <div class="ds-nav__divider"></div>
+        <li><span class="ds-nav__link">⚙️ Admin</span></li>
+        <li><span class="ds-nav__link" onclick="goTo(4)" style="cursor:pointer">← KOL Dashboard</span></li>
+      </ul>
+    </aside>
+
+    <!-- BI Main -->
+    <main class="ds-main">
+      <div class="ds-topbar">
+        <div>
+          <div class="ds-page-title">Campaign Overview</div>
+          <div class="ds-page-meta">Cập nhật: 12/05/2026 09:00 · 4 lần/ngày</div>
+        </div>
+        <div class="ds-topbar__actions">
+          <button class="btn-outline-sm">📊 CSV</button>
+          <button class="btn-outline-sm">📋 Excel</button>
+          <button class="btn-outline-sm">📄 PDF</button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:var(--space-3);margin-bottom:var(--space-5);flex-wrap:wrap;align-items:center">
+        <select style="height:36px;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0 var(--space-3);font-size:13px;color:var(--color-text-primary);background:var(--color-white);outline:none;font-family:var(--font-main)" aria-label="Chọn campaign">
+          <option>Tất cả campaign</option>
+          <option>YODY Summer 2026</option>
+          <option>YODY Eco Collection</option>
+        </select>
+        <select style="height:36px;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0 var(--space-3);font-size:13px;color:var(--color-text-primary);background:var(--color-white);outline:none;font-family:var(--font-main)" aria-label="Tier">
+          <option>Tất cả tier</option>
+          <option>Mega KOL</option>
+          <option>Macro KOL</option>
+          <option>Micro KOC</option>
+        </select>
+        <select style="height:36px;border:1px solid var(--color-border);border-radius:var(--radius-md);padding:0 var(--space-3);font-size:13px;color:var(--color-text-primary);background:var(--color-white);outline:none;font-family:var(--font-main)" aria-label="Thời gian">
+          <option>Tháng 5/2026</option>
+          <option>Tháng 4/2026</option>
+          <option>Q1 2026</option>
+        </select>
+        <!-- Time range toggle -->
+        <div style="display:flex;background:var(--color-bg-light);border-radius:var(--radius-md);border:1px solid var(--color-border);overflow:hidden">
+          <button onclick="setRange(this)" style="height:36px;padding:0 14px;border:none;background:var(--color-white);font-size:13px;font-weight:700;color:var(--color-text-primary);font-family:var(--font-main);cursor:pointer">7 ngày</button>
+          <button onclick="setRange(this)" style="height:36px;padding:0 14px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--color-text-secondary);font-family:var(--font-main);cursor:pointer">30 ngày</button>
+          <button onclick="setRange(this)" style="height:36px;padding:0 14px;border:none;background:transparent;font-size:13px;font-weight:500;color:var(--color-text-secondary);font-family:var(--font-main);cursor:pointer">Tất cả</button>
+        </div>
+      </div>
+
+      <!-- BI KPI — 5 cols -->
+      <div class="g5" style="margin-bottom:var(--space-5)">
+        <div class="kpi-card">
+          <div class="kpi-card__label">Tổng View</div>
+          <div class="kpi-card__value" style="font-size:22px">12.4M</div>
+          <div class="kpi-card__change kpi-card__change--up">↑ +18%</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Creator tracking</div>
+          <div class="kpi-card__value" style="font-size:22px">47</div>
+          <div class="kpi-card__change kpi-card__change--blue">35 connected</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Tổng Video</div>
+          <div class="kpi-card__value" style="font-size:22px">183</div>
+          <div class="kpi-card__change kpi-card__change--up">↑ +12 tuần này</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Avg. CPV</div>
+          <div class="kpi-card__value" style="font-size:22px">₫148</div>
+          <div class="kpi-card__change kpi-card__change--up">↓ -22% (tốt hơn)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card__label">Data Quality</div>
+          <div class="kpi-card__value" style="font-size:22px;color:var(--color-success)">89%</div>
+          <div class="kpi-card__change kpi-card__change--down">⚠️ 5 vấn đề</div>
+        </div>
+      </div>
+
+      <!-- Chart + Data Quality -->
+      <div class="g2" style="margin-bottom:var(--space-5)">
+        <div class="sc">
+          <div class="sc__header"><span class="sc__title">📈 View theo ngày — 7 ngày gần nhất</span></div>
+          <div class="bar-chart" aria-label="Biểu đồ view theo ngày">
+            <div class="bar-item"><div class="bar-fill" style="height:60%"></div><div class="bar-lbl">6/5</div></div>
+            <div class="bar-item"><div class="bar-fill" style="height:74%"></div><div class="bar-lbl">7/5</div></div>
+            <div class="bar-item"><div class="bar-fill" style="height:45%"></div><div class="bar-lbl">8/5</div></div>
+            <div class="bar-item"><div class="bar-fill" style="height:88%"></div><div class="bar-lbl">9/5</div></div>
+            <div class="bar-item"><div class="bar-fill bar-fill--highlight" style="height:100%"></div><div class="bar-lbl">10/5</div></div>
+            <div class="bar-item"><div class="bar-fill" style="height:81%"></div><div class="bar-lbl">11/5</div></div>
+            <div class="bar-item"><div class="bar-fill" style="height:68%"></div><div class="bar-lbl">12/5</div></div>
+          </div>
+          <div style="font-size:12px;color:var(--color-muted);margin-top:var(--space-3);text-align:center">
+            🟡 10/5: Spike sau khi @huongtra đăng video viral — 1.2M views trong 24h
+          </div>
+        </div>
+
+        <div class="sc">
+          <div class="sc__header">
+            <span class="sc__title">⚠️ Data Quality</span>
+            <span class="alert-chip">5 vấn đề</span>
+          </div>
+          <div class="dq-row"><span class="dq-label">Creator chưa kết nối TikTok</span><span class="dq-value dq-value--warn">12</span></div>
+          <div class="dq-row"><span class="dq-label">Creator thiếu link video</span><span class="dq-value dq-value--warn">5</span></div>
+          <div class="dq-row"><span class="dq-label">Token sắp hết hạn (7 ngày)</span><span class="dq-value dq-value--mid">3</span></div>
+          <div class="dq-row"><span class="dq-label">Token đã hết hạn</span><span class="dq-value dq-value--warn">2</span></div>
+          <div class="dq-row"><span class="dq-label">Creator đã đủ dữ liệu</span><span class="dq-value dq-value--ok">35</span></div>
+          <div class="dq-row"><span class="dq-label">Video tracking hợp lệ</span><span class="dq-value dq-value--ok">183 / 190</span></div>
+        </div>
+      </div>
+
+      <!-- Creator Ranking -->
+      <div class="sc">
+        <div class="sc__header">
+          <span class="sc__title">👥 Creator Ranking — YODY Summer 2026</span>
+          <span class="sc__action">Xem tất cả 47 creators</span>
+        </div>
+        <table class="data-table" aria-label="Creator ranking">
+          <thead>
+            <tr>
+              <th style="width:36px">#</th>
+              <th>Creator</th>
+              <th>Tier</th>
+              <th class="right">Tổng View</th>
+              <th class="right">Video</th>
+              <th class="right">Avg View</th>
+              <th class="right">CPV</th>
+              <th class="right">Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><div class="rank-badge rank-badge--gold" aria-label="Hạng 1">1</div></td>
+              <td>
+                <div class="creator-row">
+                  <div class="creator-avatar" style="background:var(--color-blue)" aria-hidden="true">H</div>
+                  <div>
+                    <div class="creator-name">Hương Trà</div>
+                    <div class="creator-handle">@huongtra.official</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier tier--macro">Macro</span></td>
+              <td class="right" style="font-weight:700">3.2M</td>
+              <td class="right">8</td>
+              <td class="right">400K</td>
+              <td class="right"><span class="cpv-good">₫94</span></td>
+              <td class="right"><span class="chip chip--success">Connected</span></td>
+            </tr>
+            <tr>
+              <td><div class="rank-badge rank-badge--gold" aria-label="Hạng 2">2</div></td>
+              <td>
+                <div class="creator-row">
+                  <div class="creator-avatar" style="background:var(--color-navy)" aria-hidden="true">M</div>
+                  <div>
+                    <div class="creator-name">Minh Tú Beauty</div>
+                    <div class="creator-handle">@minhtu.beauty</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier tier--mega">Mega</span></td>
+              <td class="right" style="font-weight:700">5.8M</td>
+              <td class="right">12</td>
+              <td class="right">483K</td>
+              <td class="right"><span class="cpv-mid">₫172</span></td>
+              <td class="right"><span class="chip chip--success">Connected</span></td>
+            </tr>
+            <tr>
+              <td><div class="rank-badge" aria-label="Hạng 3">3</div></td>
+              <td>
+                <div class="creator-row">
+                  <div class="creator-avatar" style="background:var(--color-success)" aria-hidden="true">L</div>
+                  <div>
+                    <div class="creator-name">Linh Barbie</div>
+                    <div class="creator-handle">@linhbarbie</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier tier--micro">Micro</span></td>
+              <td class="right" style="font-weight:700">890K</td>
+              <td class="right">5</td>
+              <td class="right">178K</td>
+              <td class="right"><span class="cpv-good">₫67</span></td>
+              <td class="right"><span class="chip chip--success">Connected</span></td>
+            </tr>
+            <tr>
+              <td><div class="rank-badge" aria-label="Hạng 4">4</div></td>
+              <td>
+                <div class="creator-row">
+                  <div class="creator-avatar" style="background:#d97706" aria-hidden="true">T</div>
+                  <div>
+                    <div class="creator-name">Trang Nemo</div>
+                    <div class="creator-handle">@trangnemo</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier tier--macro">Macro</span></td>
+              <td class="right" style="font-weight:700">1.4M</td>
+              <td class="right">6</td>
+              <td class="right">233K</td>
+              <td class="right"><span class="cpv-mid">₫214</span></td>
+              <td class="right"><span class="chip chip--danger">Token hết hạn</span></td>
+            </tr>
+            <tr>
+              <td><div class="rank-badge" aria-label="Hạng 5">5</div></td>
+              <td>
+                <div class="creator-row">
+                  <div class="creator-avatar" style="background:var(--color-muted)" aria-hidden="true">A</div>
+                  <div>
+                    <div class="creator-name">An Khương</div>
+                    <div class="creator-handle">@ankhuong</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="tier tier--micro">Micro</span></td>
+              <td class="right" style="color:var(--color-muted)">—</td>
+              <td class="right">3</td>
+              <td class="right" style="color:var(--color-muted)">—</td>
+              <td class="right" style="color:var(--color-muted)">—</td>
+              <td class="right"><span class="chip chip--muted">Chưa connect</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Floating button -->
+<button class="floating-button" aria-label="Hỗ trợ" title="Chat hỗ trợ">💬</button>
+
+<script>
+// ── Screen navigation ──
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-step').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-' + n);
+  const nav    = document.getElementById('nav-' + n);
+  if (screen) screen.classList.add('active');
+  if (nav)    nav.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Consent: enable button only when all 3 checked ──
+function updateConsent() {
+  const allChecked = ['ck1','ck2','ck3'].every(id => document.getElementById(id).checked);
+  document.getElementById('consent-btn').disabled = !allChecked;
+}
+
+// ── Tab switcher ──
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-btn').forEach(b => { b.classList.remove('active'); b.setAttribute('aria-selected','false'); });
+  el.classList.add('active');
+  el.setAttribute('aria-selected', 'true');
+  document.getElementById('tab-oauth').style.display  = tab === 'oauth'  ? 'block' : 'none';
+  document.getElementById('tab-manual').style.display = tab === 'manual' ? 'block' : 'none';
+}
+
+// ── Simulate TikTok OAuth ──
+function simulateTikTokLogin() {
+  const btn = document.querySelector('.btn-tiktok');
+  btn.textContent = '⏳ Đang xác thực với TikTok...';
+  btn.disabled = true;
+  setTimeout(() => goTo(4), 1600);
+}
+
+// ── Add video chip ──
+function addVideoChip() {
+  const input = document.getElementById('video-input');
+  const val   = input.value.trim();
+  if (!val) return;
+  const chip  = document.createElement('div');
+  chip.className = 'video-chip';
+  const label = val.length > 38 ? val.slice(0, 35) + '…' : val;
+  chip.innerHTML = `🎵 ${label} <button class="video-chip__remove" onclick="this.parentElement.remove()" aria-label="Xóa">×</button>`;
+  document.getElementById('video-chips').appendChild(chip);
+  input.value = '';
+  input.focus();
+}
+input?.addEventListener?.('keydown', e => { if (e.key === 'Enter') addVideoChip(); });
+
+// ── Range toggle ──
+function setRange(el) {
+  el.closest('div').querySelectorAll('button').forEach(b => {
+    b.style.background = 'transparent';
+    b.style.fontWeight = '500';
+    b.style.color = 'var(--color-text-secondary)';
+  });
+  el.style.background  = 'var(--color-white)';
+  el.style.fontWeight  = '700';
+  el.style.color       = 'var(--color-text-primary)';
+}
+</script>
+</body>
+</html>
